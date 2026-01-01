@@ -280,6 +280,7 @@
             const txt = document.getElementById('voc-text').value;
             const lang = document.getElementById('voc-lang').value;
             if(!txt) return;
+            // Mock translation logic for simplicity, in production fetch API
             const u = new SpeechSynthesisUtterance(txt);
             u.lang = lang;
             speechSynthesis.speak(u);
@@ -307,8 +308,8 @@
             ctx.drawImage(vid, 0, 0);
 
             // Calculate center crop (matches the CSS box)
-            const w = can.width * 0.6;
-            const h = can.height * 0.2; 
+            const w = can.width * 0.6; // 60% width
+            const h = can.height * 0.2; // 20% height
             const x = (can.width - w) / 2;
             const y = (can.height - h) / 2;
 
@@ -322,11 +323,12 @@
             const d = imgData.data;
             for (let i = 0; i < d.length; i += 4) {
                 let avg = (d[i] + d[i+1] + d[i+2]) / 3;
-                let c = avg > 100 ? 255 : 0; 
+                let c = avg > 100 ? 255 : 0; // High contrast threshold
                 d[i] = d[i+1] = d[i+2] = c;
             }
             cCtx.putImageData(imgData, 0, 0);
 
+            // Show debug preview
             prev.innerHTML = '';
             cropCan.style.width = '100%';
             prev.appendChild(cropCan);
@@ -337,6 +339,7 @@
             if(text.trim().length > 0) {
                 res.value = text.trim();
                 status.innerText = "TEXT FOUND";
+                // Speak
                 const u = new SpeechSynthesisUtterance(text);
                 speechSynthesis.speak(u);
             } else {
@@ -362,12 +365,13 @@
                     const d = frame.data;
                     const gain = document.getElementById('nv-gain').value;
                     
+                    // Apply Green Night Vision + Digital Gain
                     for(let i=0; i<d.length; i+=4) {
                         const r = d[i], g = d[i+1], b = d[i+2];
-                        const v = (0.2126*r + 0.7152*g + 0.0722*b) * gain;
-                        d[i] = 0;  
-                        d[i+1] = v; 
-                        d[i+2] = 0; 
+                        const v = (0.2126*r + 0.7152*g + 0.0722*b) * gain; // Boost brightness
+                        d[i] = 0;   // R
+                        d[i+1] = v; // G (Green Channel only)
+                        d[i+2] = 0; // B
                     }
                     ctx.putImageData(frame, 0, 0);
                 }
@@ -399,6 +403,7 @@
                     const cx = can.width / 2;
                     const cy = can.height / 2;
                     
+                    // Draw Mirrored Bars
                     for(let i=0; i<data.length; i++) {
                         const h = (data[i]/255) * (can.height/2);
                         const w = (can.width/2) / data.length;
@@ -406,7 +411,9 @@
                         
                         ctx.fillStyle = `rgba(0, 247, 255, ${data[i]/200})`;
                         
+                        // Right Side
                         ctx.fillRect(cx + x, cy - h/2, w-1, h);
+                        // Left Side (Mirror)
                         ctx.fillRect(cx - x - w, cy - h/2, w-1, h);
                     }
                     animationId = requestAnimationFrame(draw);
